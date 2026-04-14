@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J&J Incentive Calculator — RB H1 2026</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="header-inner">
+    <span class="logo-mark">J&amp;J</span>
+    <div class="header-text">
+      <div class="header-title">Innovative Medicine · RB Incentive Calculator</div>
+      <div class="header-sub">Reimbursed Business &nbsp;·&nbsp; Policy Period: Jan 2026 – Jun 2026</div>
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <span class="theme-icon-sun">☀️</span>
+        <span class="theme-icon-moon">🌙</span>
+        <span class="theme-track"><span class="theme-thumb"></span></span>
+      </button>
+      <span class="header-pill">H1 2026</span>
+    </div>
+  </div>
+</header>
+
+<nav class="stepper-bar" aria-label="Steps">
+  <div class="stepper">
+    <div class="st active" id="tab1" onclick="goTo(1)" role="button" tabindex="0">
+      <div class="step-num"><span class="num">1</span><span class="check">✓</span></div>
+      <div class="step-label">Qualify</div>
+    </div>
+    <div class="st locked" id="tab2" onclick="goTo(2)" role="button" tabindex="0">
+      <div class="step-num"><span class="num">2</span><span class="check">✓</span></div>
+      <div class="step-label">Band</div>
+    </div>
+    <div class="st locked" id="tab3" onclick="goTo(3)" role="button" tabindex="0">
+      <div class="step-num"><span class="num">3</span><span class="check">✓</span></div>
+      <div class="step-label">Achievement</div>
+    </div>
+    <div class="st locked" id="tab4" onclick="goTo(4)" role="button" tabindex="0">
+      <div class="step-num"><span class="num">4</span><span class="check">✓</span></div>
+      <div class="step-label">SFE KPIs</div>
+    </div>
+    <div class="st locked" id="tab5" onclick="goTo(5)" role="button" tabindex="0">
+      <div class="step-num"><span class="num">5</span><span class="check">✓</span></div>
+      <div class="step-label">Result</div>
+    </div>
+  </div>
+</nav>
+
+<main class="main-wrap">
+
+  <!-- ══ STAGE 1: QUALIFY ══ -->
+  <div class="stage on" id="stage-1">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">🔒</div>
+        <h2>Qualification Check</h2>
+        <span class="step-badge">Step 1 of 5</span>
+      </div>
+      <div class="card-body">
+
+        <div class="fg fg-2" style="margin-bottom:24px;">
+          <div class="field">
+            <label>Name / Employee ID</label>
+            <input type="text" id="emp" placeholder="e.g. Priya Sharma" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Quarter Being Calculated <span class="req">*</span></label>
+            <select id="qtr">
+              <option value="">— Select quarter —</option>
+              <option value="Q1 2026">Q1 2026 &nbsp;(Jan – Mar)</option>
+              <option value="Q2 2026">Q2 2026 &nbsp;(Apr – Jun)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-strip">
+          <strong>Threshold Gate —</strong> Enter your total actual and total target for this quarter.
+          Formula: <strong>(Actual ÷ Target) × 100</strong><br>
+          ≥ 90% → proceed to full incentive calculation.<br>
+          &lt; 90% → you may still qualify for <strong>H1 Win-Back</strong> if the other quarter was ≥ 90% and combined H1 reaches 100%.
+        </div>
+
+        <div class="fg fg-2" style="max-width:520px;">
+          <div class="field">
+            <label>This Quarter's Actual <span class="req">*</span></label>
+            <input type="number" id="qual-actual" placeholder="e.g. 185" min="0" step="0.1" oninput="onQualInput()">
+            <span class="hint">Total actual value achieved this quarter (₹ Lakhs)</span>
+          </div>
+          <div class="field">
+            <label>This Quarter's Target <span class="req">*</span></label>
+            <input type="number" id="qual-target" placeholder="e.g. 200" min="0.01" step="0.1" oninput="onQualInput()">
+            <span class="hint">Your quarterly total target (same unit)</span>
+          </div>
+        </div>
+
+        <!-- Live result -->
+        <div id="qual-result" style="margin-top:18px;"></div>
+
+        <!-- QUALIFIED: normal proceed -->
+        <div id="qual-proceed" style="display:none;">
+          <div class="btn-row" style="margin-top:0; padding-top:16px; justify-content:flex-start;">
+            <button class="btn btn-primary" id="qual-next-btn" onclick="setQualMode('normal'); advanceTo(2);">
+              ✓ Qualified — Proceed to Calculator →
+            </button>
+          </div>
+        </div>
+
+        <!-- NOT QUALIFIED: offer win-back path -->
+        <div id="qual-missed" style="display:none;">
+          <div class="notice danger" style="margin-top:0;">
+            <span class="ni">⛔</span>
+            <div>
+              <strong>This quarter: below 90%.</strong> No direct incentive payout for this quarter.<br>
+              However, if you qualified in the <strong id="other-qtr-label">other quarter</strong> and your
+              combined H1 achievement reaches ≥ 100%, you are eligible for <strong>H1 Win-Back</strong>.
+            </div>
+          </div>
+          <div class="wb-path-btns">
+            <button class="wb-path-btn winback" onclick="setQualMode('winback'); advanceTo(2);">
+              <span class="wpb-icon">🔄</span>
+              <span class="wpb-title">Check H1 Win-Back Eligibility</span>
+              <span class="wpb-desc">I qualified the other quarter — check if H1 combined ≥ 100%</span>
+            </button>
+            <button class="wb-path-btn none" onclick="setQualMode(null); resetAll();">
+              <span class="wpb-icon">✕</span>
+              <span class="wpb-title">No Incentive This Quarter</span>
+              <span class="wpb-desc">I did not qualify either quarter — start over</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ STAGE 2: BAND ══ -->
+  <div class="stage" id="stage-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">🎯</div>
+        <h2>Total Value Target &amp; Band</h2>
+        <span class="step-badge">Step 2 of 5</span>
+      </div>
+      <div class="card-body">
+
+        <div class="info-strip">
+          <strong>Band Detection —</strong> Your <strong>Annual Total Value target</strong> (₹ Lakhs)
+          is the sole determinant of your Band (A–E) and the target multiplier applied to your entire base incentive.
+        </div>
+
+        <div class="fg fg-15">
+          <div class="field">
+            <label>Total Value Target — Annual (₹ Lakhs) <span class="req">*</span></label>
+            <input type="number" id="t-tv" placeholder="e.g. 500" step="0.1" min="0" oninput="onTVChange(this.value)">
+            <span class="hint">Annual target in ₹ Lakhs. This alone defines your band and multiplier.</span>
+          </div>
+          <div class="field">
+            <label>Detected Band &amp; Multiplier</label>
+            <div class="band-display" id="band-display">
+              <span class="bd-placeholder">Enter target above →</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sec-title"><span class="st-icon">📊</span> Band Reference</div>
+        <p style="font-size:12.5px;color:var(--stone);margin-bottom:14px;">
+          Range: ≥ lower bound, &lt; upper bound. Values in ₹ Lakhs.
+        </p>
+        <div class="band-table-scroll">
+          <table class="band-table">
+            <thead>
+              <tr>
+                <th>Band</th>
+                <th>Total Value Target (Annual, ₹ Lakhs)</th>
+                <th>Multiplier</th>
+              </tr>
+            </thead>
+            <tbody id="band-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+          <button class="btn btn-primary" onclick="advanceTo(3); renderBrandTable();">Next: Achievement →</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ STAGE 3: ACHIEVEMENT + WIN-BACK ══ -->
+  <div class="stage" id="stage-3">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">📈</div>
+        <h2>Component Achievement</h2>
+        <span class="step-badge">Step 3 of 5</span>
+      </div>
+      <div class="card-body">
+
+        <!-- Q2 win-back hint — shown only when Q2 selected -->
+        <div id="q2-notice" style="display:none;"></div>
+
+        <div class="info-strip">
+          <strong>Payout Calculation —</strong> Enter your <strong>actual value</strong> and <strong>quarterly target</strong> for each component.
+          Achievement % is calculated automatically as <strong>Actual ÷ Target × 100</strong>.
+          Components below 90% earn ₹0. Formula: Base × Target Factor × Achievement Factor × SFE Factor.
+        </div>
+
+        <div class="sec-title"><span class="st-icon">🎯</span> <span id="q2-label">Q2 </span>Per-Component Actual vs Target</div>
+        <div id="ach-wrap"></div>
+
+        <div class="divider"></div>
+        <div class="sec-title"><span class="st-icon">📋</span> Payout Curve Reference</div>
+        <p style="font-size:12.5px;color:var(--stone);margin-bottom:12px;">
+          Factor applied to each component's base amount independently based on its achievement %.
+        </p>
+        <div id="curve-wrap"></div>
+
+        <!-- WIN-BACK SECTION — only shown when Q2 is selected -->
+        <div id="winback-section-step3" style="display:none;">
+          <div class="divider"></div>
+          <div class="sec-title"><span class="st-icon">🔄</span> H1 Win-Back — Q1 Recovery</div>
+
+          <div class="info-strip" style="margin-bottom:16px;">
+            <strong>Win-back triggers when:</strong> Q1 was missed (< 90%) BUT combined H1 achievement
+            (Q1 + Q2 actuals ÷ Q1 + Q2 targets) reaches <strong>≥ 100%</strong>.<br>
+            Recovered Q1 payout uses an achievement factor capped at <strong>1.00×</strong> — no upside multipliers.
+            Band multiplier and SFE factor still apply.
+          </div>
+
+          <div class="wb-toggle">
+            <label class="wb-toggle-label">
+              <input type="checkbox" id="wb-enabled" onchange="onWinbackToggle(this.checked)">
+              <span class="wb-toggle-track"><span class="wb-toggle-thumb"></span></span>
+              <span class="wb-toggle-text" id="wb-toggle-text">Check H1 Win-Back eligibility</span>
+            </label>
+          </div>
+
+          <div id="wb-inputs" style="display:none; margin-top:18px;">
+            <p style="font-size:12.5px;color:var(--stone);margin-bottom:14px;" id="wb-inputs-desc">
+              Enter the <strong>other quarter's</strong> actuals and targets per component.
+            </p>
+            <div id="wb-wrap"></div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo(2)">← Back</button>
+          <button class="btn btn-primary" onclick="advanceTo(4)">Next: SFE KPIs →</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ STAGE 4: SFE ══ -->
+  <div class="stage" id="stage-4">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">📊</div>
+        <h2>SFE KPI Factor</h2>
+        <span class="step-badge">Step 4 of 5</span>
+      </div>
+      <div class="card-body">
+
+        <div class="info-strip">
+          <strong>Formula:</strong> SFE Score = <strong>(0.5 × EI) + (0.5 × RI)</strong>
+          &nbsp;—&nbsp; computed monthly from iConnect / SFE+ on the 3rd working day of the following month.<br>
+          EI = Efficiency Index &nbsp;·&nbsp; RI = Reach Index. Applied as a final multiplier on total incentive.
+        </div>
+
+        <div class="sfe-inputs">
+          <div class="sfe-box">
+            <label>Efficiency Index (EI) <span style="color:var(--crimson);">*</span></label>
+            <input type="number" id="ei" placeholder="e.g. 88" min="0" max="200" step="0.1" oninput="onSFEInput()">
+          </div>
+          <div class="sfe-box">
+            <label>Reach Index (RI) <span style="color:var(--crimson);">*</span></label>
+            <input type="number" id="ri" placeholder="e.g. 82" min="0" max="200" step="0.1" oninput="onSFEInput()">
+          </div>
+        </div>
+
+        <div class="sfe-result-panel">
+          <div class="sfe-score-block">
+            <div class="sfe-score-label">SFE Score</div>
+            <div class="sfe-score-val" id="sfe-score-val">—</div>
+          </div>
+          <div class="sfe-score-block">
+            <div class="sfe-score-label">Incentive %</div>
+            <div class="sfe-pct-val" id="sfe-pct-val">—</div>
+          </div>
+          <div>
+            <div class="sfe-score-label" style="margin-bottom:6px;">Status</div>
+            <span class="sfe-badge" id="sfe-badge"></span>
+          </div>
+          <div class="sfe-meter">
+            <div class="sfe-meter-track">
+              <div class="sfe-meter-fill" id="sfe-meter-fill"></div>
+            </div>
+            <div class="meter-labels"><span>0</span><span>70</span><span>85</span><span>100+</span></div>
+          </div>
+          <div id="sfe-note"></div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sec-title"><span class="st-icon">📑</span> SFE KPI Multiplier Reference</div>
+        <table class="curve-table" style="max-width:340px;">
+          <thead><tr><th>SFE Score</th><th>Incentive Multiplier</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr class="sfe-ref-row"><td>&lt; 70</td><td class="no-pay">80%</td><td>−20% deduction</td></tr>
+            <tr class="sfe-ref-row"><td>70 – &lt; 85</td><td style="color:var(--amber);font-weight:700;">90%</td><td>−10% deduction</td></tr>
+            <tr class="sfe-ref-row"><td>≥ 85</td><td style="color:var(--green);font-weight:700;">100%</td><td>No deduction</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11.5px;color:var(--stone);margin-top:10px;">
+          For newly joined employees: SFE KPI for the joining month is excluded.
+        </p>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo(3)">← Back</button>
+          <button class="btn btn-primary" onclick="advanceTo(5); renderResults();">Calculate Incentive →</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ STAGE 5: RESULTS ══ -->
+  <div class="stage" id="stage-5">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon">💰</div>
+        <h2>Incentive Result</h2>
+        <span class="step-badge">Step 5 of 5</span>
+      </div>
+      <div class="card-body">
+
+        <div id="result-meta"></div>
+        <div class="kpi-cards" id="result-kpis"></div>
+
+        <div class="sec-title"><span class="st-icon">📊</span> Payout Breakdown — Per Component</div>
+        <p style="font-size:12.5px;color:var(--stone);margin-bottom:16px;">
+          Each chart shows what you earn at every achievement level for that component, based on your base amount and band multiplier. Your actual achievement is highlighted.
+        </p>
+        <div class="pc-grid" id="bar-chart"></div>
+
+        <div class="divider"></div>
+        <div class="sec-title"><span class="st-icon">📋</span> Component Breakdown</div>
+        <div style="overflow-x:auto;">
+          <table class="breakdown-table">
+            <thead>
+              <tr>
+                <th>Component</th><th>Target Factor</th>
+                <th>Achvt %</th><th>Achvt Factor</th><th>SFE Factor</th><th>Total (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="breakdown-body"></tbody>
+          </table>
+        </div>
+
+        <div id="fr-section"></div>
+        <div id="winback-section"></div>
+
+        <div class="footer-note">
+          <strong>Notes:</strong><br>
+          • Any product with zero target in a given quarter is considered against H1 target &amp; 20% component (for both quarters).<br>
+          • Win-back applies on achieving YTD 100% vs immediately prior quarter. All components eligible.<br>
+          • SFE KPI is computed monthly from iConnect/SFE+ on the 3rd working day of the following month.<br>
+          • This calculator is indicative. Final payout is subject to official HR / Finance approval.
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="goTo(4)">← Back</button>
+          <button class="btn btn-export" onclick="exportPDF()"><span class="btn-icon">⬇</span> Export PDF</button>
+          <button class="btn btn-ghost" onclick="resetAll()">🔄 &nbsp;New Calculation</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="print-template" style="display:none;"></div>
+
+</main>
+
+<script src="logic.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
